@@ -1,12 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+
+  const debounce = (callback, delay) => {
+    let timer;
+    return (value) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        callback(value);
+      }, delay)
+    };
+  };
 
 
 function App() {
 
+
+
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState([]);
 
-  const handleFetch = async () => {
+  const handleFetch = async (query) => {
     if (!query.trim()) {
       setProducts([]);
       return
@@ -16,15 +28,18 @@ function App() {
       const resp = await fetch(`http://localhost:3333/products?search=${query}`);
       const dataProducts = await resp.json();
       setProducts(dataProducts);
+      console.log(products);
     } catch (error) {
       console.error(`Errore! Non è stato possibile ottenere i dati`, error.message);
     }
   };
 
+  const debouncefetch = useCallback(debounce(handleFetch, 500), [])
+
   useEffect(() => {
-   handleFetch()
+    debouncefetch(query)
   }, [query]);
-  console.log(products);
+  
 
   return (
     <div className="container">
